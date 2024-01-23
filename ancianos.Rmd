@@ -1,0 +1,144 @@
+---
+title: "Ancianos"
+author: "Ferran Garcia"
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_document2:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE, fig.pos = "H")
+setwd("C:/Users/ferran/Documents/Universitat/US/GEO/trabajos/ancianos")
+```
+
+```{r}
+library(knitr)
+library(corrplot)
+library(dplyr)
+library(readxl)
+library(psych)
+```
+
+```{r}
+source("scripts/import.R")
+source("scripts/tabs.R")
+```
+
+\newpage
+# Introducción
+
+## Contexto
+
+El envejecimiento demográfico emerge como un fenómeno geográfico crítico que podría acarrear serias implicaciones macroeconómicas estructurales en nuestra sociedad. En consecuencia, resulta imperativo abordar de manera inmediata políticas orientadas a mejorar la calidad de vida de la población mayor, fundamentadas en estudios que delineen su situación espacial y social, particularmente en aquellos entornos urbanos donde su presencia es más significativa.
+
+## Objetivos
+
+En el actual escenario, nos enfrentamos al desafío de localizar áreas urbanas en el municipio de Sevilla que compartan una estructura demográfica similar, especialmente en lo que respecta a la población mayor. Para abordar este objetivo, emplearemos distintos métodos de análisis estadístico multivariante y espacial. La meta es desarrollar servicios sociales y de asistencia que tomen en cuenta las características específicas de los ancianos y su distribución geográfica en la ciudad. En este contexto, nuestro enfoque consiste en identificar segmentos homogéneos de la población anciana en áreas urbanas. La ejecución de este proceso nos permitirá diseñar servicios sociales y de asistencia que se adapten a las necesidades particulares de los ancianos, considerando tanto su tipología como su ubicación en la ciudad.
+
+## Estructura
+
+\newpage
+# Metodología
+
+## Técnicas
+
+## Herramientas
+
+\newpage
+# Reducción dimensional
+
+Disponemos de muchas variables, eso motiva las técnicas de reducción dimensional. Usaremos análisis factorial de componentes pricipales, la idea es sintetizar todas las medidas disponibles en variables latentes. Lo haremos aprovechando la correlación que comparten. Para ello seleccionamos las variables que incluiremos a partir de un breve análisis exploratorio. Luego comprobaremos si es pertinente usar los procedimientos en cuestión en el conjunto de datos resultante. Entonces realizaremos varios ajustes con diferente número de factores hasta alcanzar la descomposición más satisfactoria en términos de representabilidad de las variables iniciales. Finalmente aplicaremos técnicas de rotación con tal de lograr factores ortogonales que sean interpretables. Con éstos extraeremos las puntuaciones factoriales que más adelante usaremos para crear clústers.
+
+## Selección de variables y adecuación de los datos
+
+La selección de variables sirve para subsanar potenciales problemas y afinar en el cálculo de factores. Es importante tanto para que se pueda realizar el análisis factorial como para que éste sea eficiente y se ajuste un modelo robusto con interpretación relativamente simple evitando sobreajuste.
+
+Por ejemplo, si nos fijamos en las variables demográficas veremos que se incluyen múltiples medidas de población quedando algunas determinadas completamente por el resto. En cuanto a la *situación laboral* tenemos población activa, ocupada, inactiva y parados.Entonces el total queda determinado por otra variable, ya sea la población total o u subgrupo de ésta y por tanto son linealmente dependientes. Por tanto la matriz de correlaciones no será inverible y en consecuencia no se podrá realizar el análisis factorial. Lo mismo ocurre con algunas variables del estado de las viviendas. En el annexo se muestra una lista completa de las variables que han sido excluidas por este motivo.
+
+Por otro lado es importante que las variables seleccionadas estén correlacionadas entre sí. Para comprobarlo representamos gráficamente la correlación entre las variables seleccionadas y recogemos en una tabla estadísticos relevantes para la selección de variables como: 
+
+  - Estimación inicial de comunalidades^[Correlación múltiple al cuadrado]
+  - Suma de correlaciones absolutas
+  - Número de variables no correlacionadas^[Test de correlación de Pearson, nivel de significación del 5%]
+
+```{r}
+cor_tab0
+```
+
+```{r, out.width="100%", fig.align='center'}
+#| fig.cap = "Correlaciones entre todas las variables."
+include_graphics("grafs/cor/cor_x0.png")
+```
+
+
+## Número, rotación y puntuaciones factoriales
+
+
+
+\newpage
+# Clústers
+
+## Método jerárquico
+
+## Método de k-medias
+
+\newpage
+# Annexo
+
+## Variables excluidas
+
+### Variables demográficas
+- Categoría de edad: 60-64 años
+- Sexo: Población masculina
+- Procedencia: Provincial
+- Nivel de estudios: Segundo grado
+- Situación laboral: Activos
+- Situación de actividad: Ocupados
+- Categoría profesional: Servicios
+- Posición profesional: Empleados
+- Temporalidad profesional: Otro
+- Residencia: Alojamiento
+
+
+### Variables de la vivienda
+- Tamaño en m^2: +120
+- Número de habitaciones: 3
+- Número de ocupantes: 3
+- Año de construcción: 41-60
+- Régimen legal: Otro
+
+## Gráficos
+
+### Correlaciones
+
+```{r, out.width="100%", fig.align='center'}
+#| fig.cap = "Correlaciones entre variables demográficas."
+include_graphics("grafs/cor/cor_pob.png")
+```
+
+```{r, out.width="100%", fig.align='center'}
+#| fig.cap = "Correlaciones entre variables de las viviendas."
+include_graphics("grafs/cor/cor_casa.png")
+```
+
+```{r, out.width="100%", fig.align='center'}
+#| fig.cap = "Correlaciones entre todas las variables."
+include_graphics("grafs/cor/cor_df.png")
+```
+
+
+\newpage
+# Bibliografía
+
+- [Datos vectoriales](https://www.juntadeandalucia.es/institutodeestadisticaycartografia/dega/datos-espaciales-de-referencia-de-andalucia-dera/descarga-de-informacion)
+
+- [Análisis clúster I](https://spatialanalysis.github.io/workshop-notes/spatial-clustering.html#clustering-analysis-with-other-r-packages) 
+
+- [Análisis clúster II](https://spatialanalysis.github.io/tutorials/#cluster-analysis-in-r)
+
+- [Análisis clúster III](https://mhahsler.github.io/Introduction_to_Data_Mining_R_Examples/book/clustering-analysis.html)
+
+- [ClustGeo](https://cran.r-project.org/web/packages/ClustGeo/vignettes/intro_ClustGeo.html)
+
+- [ClusterR](https://cran.r-project.org/web/packages/ClusterR/vignettes/the_clusterR_package.html)
