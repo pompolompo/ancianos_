@@ -1,7 +1,8 @@
 source("scripts/import.R")
+library(corrplot)
+library(kableExtra)
 
-
-# descriptiva breve
+# SELECCIÓN DE VARIABLES
 
 ## CORRELACIONES
 
@@ -36,4 +37,15 @@ corrplot(mat, method = "color", diag = TRUE, addrect = 6,
          p.mat = testRes$p, sig.level = 0.05, order = 'hclust',
          cex.main = 2, mar = c(0, 0, 2, 0), tl.pos = "n", pch.cex = .75,
          title = "Correlaciones entre todas las variables")
+dev.off()
+
+# variables seleccionadas
+mat = cor(X0[,-1], use = "complete.obs")
+testRes = cor.mtest(X0[,-1], conf.level = 0.95)
+
+dev.new()
+corrplot(mat, method = "color", diag = TRUE, addrect = 15,
+         p.mat = testRes$p, sig.level = 0.05, order = 'hclust',
+         cex.main = 2, mar = c(0, 0, 2, 0), tl.pos = "n", pch.cex = .75,
+         title = "Correlaciones entre todas las variables seleccionadas")
 dev.off()
