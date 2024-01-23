@@ -1,0 +1,119 @@
+---
+title: "Ancianos"
+author: "Ferran Garcia"
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_document2:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE)
+```
+
+```{r}
+library(knitr)
+library(corrplot)
+library(dplyr)
+library(readxl)
+```
+
+```{r}
+source("scripts/import.R")
+```
+
+\newpage
+# Introducción
+
+## Contexto
+
+El envejecimiento demográfico emerge como un fenómeno geográfico crítico que podría acarrear serias implicaciones macroeconómicas estructurales en nuestra sociedad. En consecuencia, resulta imperativo abordar de manera inmediata políticas orientadas a mejorar la calidad de vida de la población mayor, fundamentadas en estudios que delineen su situación espacial y social, particularmente en aquellos entornos urbanos donde su presencia es más significativa.
+
+## Objetivos
+
+En el actual escenario, nos enfrentamos al desafío de localizar áreas urbanas en el municipio de Sevilla que compartan una estructura demográfica similar, especialmente en lo que respecta a la población mayor. Para abordar este objetivo, emplearemos distintos métodos de análisis estadístico multivariante y espacial. La meta es desarrollar servicios sociales y de asistencia que tomen en cuenta las características específicas de los ancianos y su distribución geográfica en la ciudad. En este contexto, nuestro enfoque consiste en identificar segmentos homogéneos de la población anciana en áreas urbanas. La ejecución de este proceso nos permitirá diseñar servicios sociales y de asistencia que se adapten a las necesidades particulares de los ancianos, considerando tanto su tipología como su ubicación en la ciudad.
+
+## Estructura
+
+\newpage
+# Metodología
+
+## Técnicas
+
+## Herramientas
+
+\newpage
+# Reducción dimensional
+
+Gráfico de correlación nete variables de
+
+```{r}
+# vivienda
+mat = cor(casa[,-1], use = "complete.obs")
+testRes = cor.mtest(casa[,-1], conf.level = 0.95)
+
+dev.new()
+corrplot(mat, method = "color", diag = FALSE, type = "upper",
+         p.mat = testRes$p, sig.level = 0.05, order = 'hclust',
+         cex.main = 2, mar = c(0, 0, 2, 0), 
+         title = "Correlaciones entre variables del hogar")
+dev.off()
+```
+
+
+```{r}
+# demografía
+mat = cor(pob[,-1], use = "complete.obs")
+testRes = cor.mtest(pob[,-1], conf.level = 0.95)
+
+dev.new()
+corrplot(mat, method = "color", diag = FALSE, type = "upper",
+         p.mat = testRes$p, sig.level = 0.05, order = 'hclust',
+         cex.main = 2, mar = c(0, 0, 2, 0), 
+         title = "Correlaciones entre variables demográficas")
+dev.off()```
+
+```{r}
+# todas las variables
+mat = cor(df[,-1], use = "complete.obs")
+testRes = cor.mtest(df[,-1], conf.level = 0.95)
+
+dev.new()
+corrplot(mat, method = "color", diag = TRUE, addrect = 6,
+         p.mat = testRes$p, sig.level = 0.05, order = 'hclust',
+         cex.main = 2, mar = c(0, 0, 2, 0), tl.pos = "n", pch.cex = .75,
+         title = "Correlaciones entre todas las variables")
+dev.off()```
+
+
+## Selección de variables
+
+## Adecuación de los datos
+
+## Número de factores
+
+## Rotación de factores
+
+## Puntuaciones factoriales
+
+\newpage
+# Clústers
+
+## Método jerárquico
+
+## Método de k-medias
+
+\newpage
+# Bibliografía
+
+- [Datos vectoriales](https://www.juntadeandalucia.es/institutodeestadisticaycartografia/dega/datos-espaciales-de-referencia-de-andalucia-dera/descarga-de-informacion)
+
+- [Análisis clúster I](https://spatialanalysis.github.io/workshop-notes/spatial-clustering.html#clustering-analysis-with-other-r-packages) 
+
+- [Análisis clúster II](https://spatialanalysis.github.io/tutorials/#cluster-analysis-in-r)
+
+- [Análisis clúster III](https://mhahsler.github.io/Introduction_to_Data_Mining_R_Examples/book/clustering-analysis.html)
+
+- [ClustGeo](https://cran.r-project.org/web/packages/ClustGeo/vignettes/intro_ClustGeo.html)
+
+- [ClusterR](https://cran.r-project.org/web/packages/ClusterR/vignettes/the_clusterR_package.html)
