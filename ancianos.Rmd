@@ -62,7 +62,11 @@ Por otro lado es importante que las variables seleccionadas estén correlacionad
   - Suma de correlaciones absolutas
   - Número de variables no correlacionadas^[Test de correlación de Pearson, nivel de significación del 5%]
 
+Las variables que se muestran en la tabla quedan excluidas del análisis factorial.
+
 ```{r}
+#| fig.cap = "Se muestran las variables con una comunalidad estimada menor al 70%,
+#|  menos de 30 correlaciones no significativas al 5% y una suma de correlaciones absolutas menor a su mediana."
 cor_tab0
 ```
 
@@ -71,9 +75,46 @@ cor_tab0
 include_graphics("grafs/cor/cor_x0.png")
 ```
 
+Veamos ahora si el conjunto de datos seleccionados resulta apropiado para el análisis factorial o si debemos seleccionar variables con un criterio más estricto. Para ello realizamos varios tests:
 
+**Esfericidad de Barlett:**
+
+- Hipóteis nula: La matriz de correlaciones es la identidad (no existe ninguna correlación)
+- Bajo $H_0$ el estadístico de contraste sigue una $\chi^2$, asintóticamente
+- Disponemos de más de 400 observaciones, se sostiene la suposición asintótica
+
+```{r, echo = TRUE}
+cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
+```
+
+**Kaiser, Meyer, Olkin:**
+
+- Medida de adecuación de la muestra para un análisis factorial
+- Compara la suma de cuadrados de la "imagen" de la matriz de correlaciones con la original
+- Está acotada entre 0 y 1, según Kaiser:
+    + Valores mayores a 0,9 son maravillosos
+    + Valores mayores a 0,8 son meritorios
+    + Valores mayores a 0,7 son medios
+    + Valores mayores a 0,6 son mediocres
+    + Valores mayores a 0,5 son miserables
+    + Valores menores a 0,5 son inaceptables
+
+```{r, echo = TRUE}
+KMO(R1)[[1]] # según Kaiser, la adecuación de la muestra es meritoria
+```
+
+\newpage
 ## Número, rotación y puntuaciones factoriales
 
+Ahora nuestra intención es identificar una estructura latente dentro del conjunto de datos. Se focaliza el interés en los factores capaces de explicar una proporción significativa de la variabilidad presente en los datos. Para determinar cuántos factores debemos retener, empleamos dos criterios. En primer lugar, se puede dibujar un scree plot para evaluar los *eigenvalues* de los factores estimados. Además, aplicamos la Regla de Kaiser, que sugiere retener aquellos factores cuyos *eigenvalues* superen la unidad. Otra estrategia consiste en seleccionar tantos factores como sean necesarios para explicar alrededor de un 70% de la variabilidad de los datos.
+
+**Regla de Kaiser:**
+
+```{r, echo = TRUE}
+sum(eigen(R1)[["values"]] > 1) # según el criterio de Kaiser, usaremos 8 factores
+```
+
+**Proporción de la varianza explicada:**
 
 
 \newpage
