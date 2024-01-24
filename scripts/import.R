@@ -16,8 +16,17 @@ shp = read_sf("datos/shape_data/13_27_SeccionCensal.shp") %>%
 
 # SELECCIÓN DE VARIABLES
 
-var_ex = c("60-64AÑOS", "POBDM", "TPRO", "2G", "ACTIVOS", "ALOJA",
+# descarte por combinación lineal
+var_ex0 = c("60-64AÑOS", "POBDM", "TPRO", "2G", "ACTIVOS", "ALOJA",
            "OCUPADOS", "PARADOS", "SERV", "EMPNOE", "OTRO_T", "OTRO_P", 
            "MAS121", "CON3HABI", "CON3OCUP", "DEL41AL60", "OTRO")
 
-X0 = df[, -which(names(df) %in% c(var_ex))]
+X0 = df[, -which(names(df) %in% var_ex0)]
+R0 = cor(X0[,-1], use = "complete.obs")
+
+# descarte por comunalidad, suma de correlaciones absoluta o insignificación
+var_ex1 = c("CON1HABI", "NOTFNO", "NOCAL", "DEL81AL90", 
+            "CON5OMAS", "EA", "TRAEVEN", "AFAM", "COOP")
+
+X1 = X0[, -which(names(X0) %in% var_ex1)]
+R1 = cor(X1[,-1], use = "complete.obs")
