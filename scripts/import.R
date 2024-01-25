@@ -30,3 +30,7 @@ var_ex1 = c("CON1HABI", "NOTFNO", "NOCAL", "DEL81AL90",
 
 X1 = X0[, -which(names(X0) %in% var_ex1)]
 R1 = cor(X1[,-1], use = "complete.obs")
+
+# estandarizamos las variables finalmente seleccionadas
+Z1 = cbind(X0[,1], scale(X0[,-1]))
+Rz1 = cor(Z1[,-1], use = "complete.obs")

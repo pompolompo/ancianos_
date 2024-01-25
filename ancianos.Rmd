@@ -103,6 +103,8 @@ cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
 KMO(R1)[[1]] # según Kaiser, la adecuación de la muestra es meritoria
 ```
 
+Cabe remarcar que tras decidir que el análisis factrial una práctica habital es estandarizar las variables con con propósito de comparabilidad entre ellas. Sin embargo trs realizar pruebas con y sin estandarizar hemos obtenido mejores resultados sin estandarizar. Teniendo en cuenta que la extracción de factores nos servirá fara formar clústers, que es nuestro principal objetivo consideramos más importante conseguir un buen ajuste que obtener comparabilidad en una etapa intermedia del trabajo.
+
 \newpage
 ## Número, rotación y puntuaciones factoriales
 
@@ -110,12 +112,42 @@ Ahora nuestra intención es identificar una estructura latente dentro del conjun
 
 **Regla de Kaiser:**
 
+En el ámbito del álgebra una matriz (como la de correlaciones) se puede interpretar como una transformación lineal. Los *eigenvectors* asociados a una transformación son aquellos vectores cuya dirección es invariable a la misma y los *eigenvalues* aparejados son la medida en la que la dirección se alarga o mengua en magnitud. Bajo ciertas condiciones de regularidad estos vectores forman una base sobre la que se puede descomponer la transformación en cuestión. La idea de Kaiser es tomar tantos factores como autovectores de "alarguen" (su importancia crezca) en el proceso de descomposición.^[Para más información sobre los *eigenvectors* y *eigenvalues* consultar [este enlace](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)]
+
 ```{r, echo = TRUE}
-sum(eigen(R1)[["values"]] > 1) # según el criterio de Kaiser, usaremos 8 factores
+autov_1 = eigen(R1)[["values"]]; sort(autov_1, decreasing = T) %>% round(digits = 2)
+sum(autov_1 > 1) # según el criterio de Kaiser, usaremos 8 factores
 ```
+En este caso Kaiser recomienda tomar 8 factores. No obstante los últimos están muy cerca de 1, es algo que debemos tener en cuenta para la selección del número de factores.
 
 **Proporción de la varianza explicada:**
 
+Para emplear el método de la varianza explicada por factores necesitamos realizar un análisis factorial como tal. De manera que ajustamos un modelo co un número arbitrario de factores y comprobamos cuántos son necesarios 
+
+```{r, echo = TRUE}
+fit_1 = factanal(na.omit(X1[,-1]), factors = 10, lower = .01)
+fit_1[["loadings"]]
+```
+
+Esta salida muestra por un lado las cargas factoriales de cada variable inicial y por el otro la proporción de varianza explicada por cada uno de los factores. Nos interesa la parte final. Nos fijamos en que se explica alrededor del 70% de la varianza con 7 u 8 factores. También notamos que los primeros factores recogen sustancialmente más varianza que el resto.
+
+**Scree plot:**
+
+En este caso interpretamos gráficamente los *eigenvalues* asociados a factores con el número que usamos. Notamos que los cuatro primeros son relativamente más altos a los dos siguientes, que resultan ser los últimos que superan el umbral de 1. En este caso el gráfico sugiere usar alrededor de 6 factores.
+
+```{r, echo = TRUE}
+scree(X1[,-1], pc = FALSE)
+```
+
+**Interpretación en conjunto:**
+
+Los diversos métodos indican una cantidad de factores similar: Entre 6 y 8. Puesto que utilizar 7 factores concuerda con los resultados de los diferentes criterios y está enmedio de las sugerencias de cada uno usaremos 7 factores para reducir la dimensionalidad de los datos.
+
+```{r, echo = TRUE}
+fit_2 = factanal(na.omit(X1[,-1]), factors = 7, lower = .007, nstart)
+```
+
+*breve interpretación de los factores*
 
 \newpage
 # Clústers
