@@ -103,7 +103,7 @@ cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
 KMO(R1)[[1]] # según Kaiser, la adecuación de la muestra es meritoria
 ```
 
-Cabe remarcar que tras decidir que el análisis factrial una práctica habital es estandarizar las variables con con propósito de comparabilidad entre ellas. Sin embargo trs realizar pruebas con y sin estandarizar hemos obtenido mejores resultados sin estandarizar. Teniendo en cuenta que la extracción de factores nos servirá fara formar clústers, que es nuestro principal objetivo consideramos más importante conseguir un buen ajuste que obtener comparabilidad en una etapa intermedia del trabajo.
+Cabe remarcar que tras decidir que el análisis factrial es adecuado una práctica habital es estandarizar las variables con con propósito de comparabilidad entre ellas. Sin embargo trs realizar pruebas con y sin estandarizar hemos obtenido mejores resultados sin estandarizar. Teniendo en cuenta que la extracción de factores nos servirá fara formar clústers, que es nuestro principal objetivo consideramos más importante conseguir un buen ajuste que obtener comparabilidad en una etapa intermedia del trabajo.
 
 \newpage
 ## Número, rotación y puntuaciones factoriales
