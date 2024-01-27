@@ -41,6 +41,35 @@ En el actual escenario, nos enfrentamos al desafío de localizar áreas urbanas 
 \newpage
 # Metodología
 
+Reducción dimensional:
+
+- Selección de variables
+  + Correlación
+  + Sentido común
+
+- Adecuación de la muestra
+  + KMO
+  + Barlett: ¿Existe correlación?
+  
+- Análisis factorial:
+  + Número de factores:
+    - Regla de Kaiser
+    - Proporción de varianza explicada
+    - Scree plot
+  + Extracción y rotación de factores (R)
+  + Puntuaciones factoriales (Descriptiva)
+
+Clústers:
+
+- Métodos jerárquicos
+  + Distancias (distintos tipos)
+  + Dirección (agregar o disolver)
+  
+- Métodos no jerárquicos
+  + K-medias
+
+- Métodos fuzzy
+
 ## Técnicas
 
 ## Herramientas
@@ -89,8 +118,8 @@ cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
 
 **Kaiser, Meyer, Olkin:**
 
-- Medida de adecuación de la muestra para un análisis factorial
-- Compara la suma de cuadrados de la "imagen" de la matriz de correlaciones con la original
+- Medida de adecuación de la muestra para un análisis factorial (basa)
+- Compara la proporción de correlación y la correlación parcial^[Si la correlación parcial es alta en comparación con la correlación canónica significa que la estructura de la correlación no es conjunta, para más información consultar [este enlace.](https://en.wikipedia.org/wiki/Kaiser%E2%80%93Meyer%E2%80%93Olkin_test#Measure_of_sampling_adequacy)]
 - Está acotada entre 0 y 1, según Kaiser:
     + Valores mayores a 0,9 son maravillosos
     + Valores mayores a 0,8 son meritorios
@@ -102,8 +131,6 @@ cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
 ```{r, echo = TRUE}
 KMO(R1)[[1]] # según Kaiser, la adecuación de la muestra es meritoria
 ```
-
-Cabe remarcar que tras decidir que el análisis factrial una práctica habital es estandarizar las variables con con propósito de comparabilidad entre ellas. Sin embargo trs realizar pruebas con y sin estandarizar hemos obtenido mejores resultados sin estandarizar. Teniendo en cuenta que la extracción de factores nos servirá fara formar clústers, que es nuestro principal objetivo consideramos más importante conseguir un buen ajuste que obtener comparabilidad en una etapa intermedia del trabajo.
 
 \newpage
 ## Número, rotación y puntuaciones factoriales
@@ -125,8 +152,8 @@ En este caso Kaiser recomienda tomar 8 factores. No obstante los últimos están
 Para emplear el método de la varianza explicada por factores necesitamos realizar un análisis factorial como tal. De manera que ajustamos un modelo co un número arbitrario de factores y comprobamos cuántos son necesarios 
 
 ```{r, echo = TRUE}
-fit_1 = factanal(na.omit(X1[,-1]), factors = 10, lower = .01)
-fit_1[["loadings"]]
+fit_1 = factanal(na.omit(X1[,-1]), factors = 8, lower = .01)
+print(fit_1[["loadings"]], digits = 2, cutoff = .5, sort = TRUE)
 ```
 
 Esta salida muestra por un lado las cargas factoriales de cada variable inicial y por el otro la proporción de varianza explicada por cada uno de los factores. Nos interesa la parte final. Nos fijamos en que se explica alrededor del 70% de la varianza con 7 u 8 factores. También notamos que los primeros factores recogen sustancialmente más varianza que el resto.
@@ -135,8 +162,8 @@ Esta salida muestra por un lado las cargas factoriales de cada variable inicial 
 
 En este caso interpretamos gráficamente los *eigenvalues* asociados a factores con el número que usamos. Notamos que los cuatro primeros son relativamente más altos a los dos siguientes, que resultan ser los últimos que superan el umbral de 1. En este caso el gráfico sugiere usar alrededor de 6 factores.
 
-```{r, echo = TRUE}
-scree(X1[,-1], pc = FALSE)
+```{r}
+sim_1 = fa.parallel(R1, n.obs = 441, fm = "ml", fa = 'fa')
 ```
 
 **Interpretación en conjunto:**
@@ -144,10 +171,49 @@ scree(X1[,-1], pc = FALSE)
 Los diversos métodos indican una cantidad de factores similar: Entre 6 y 8. Puesto que utilizar 7 factores concuerda con los resultados de los diferentes criterios y está enmedio de las sugerencias de cada uno usaremos 7 factores para reducir la dimensionalidad de los datos.
 
 ```{r, echo = TRUE}
-fit_2 = factanal(na.omit(X1[,-1]), factors = 7, lower = .007, nstart)
+fit_2 = factanal(na.omit(X1[,-1]), factors = 7, lower = .007, scores = "regression")
+print(fit_2[["loadings"]], digits = 2, cutoff = .5, sort = TRUE)
 ```
 
-*breve interpretación de los factores*
+Representamos los pesos factoriales más importantes (almenos 0,5) para cada variable. Una versión más detallada a la que nos referimos en las siguientes líneas se puede encontrar en ele annexo. Como era de esperar los primeros factores cargan más información que los siguientes y por tanto su interpretación es más compleja. A continuación proponemos una breve e intuitiva interpretación intuitiva sobre cada uno:
+
+**Factor 1: Necesidad futura** 
+Contiene información sobre variables demográficas y del hogar. Por un lado indica una población sustancial que en general es de procedencia cercana^[de Sevilla o Andalucía.] y de edad no muy avanzada.^[se relaciona más con los tramos de edad más bajos.] Teniendo en cuenta las variables laborales y educativas está relacionado con una estrato social medio-bajo. En resumen, describe zonas en las que servicios sociales y asistenciales serán necesarios en un futuro cercano.
+
+**Factor 2: Ahora autosuficiente**
+En cierta manera es la antítesis del anterior factor. Lo único que comparten es la relación con la cantidad de habitantes. Este factor describe zonas relativamente pobladas por personas con procedencia lejana^[Fuera de Andalucía y en mayor medida de fuera del España.] con capacidad económica presumiblemente alta^[Relacionado con nivel educativo alto y trabajo fijo.] y viviendas con caché.^[Viviendas grandes en términos de espacio y habitaciones.] Cabe destacar que en cierta manera la relación con los tramos de edad describe una población más envejecida, sin embargo la conexión es menor que en el caso anterior.
+
+El resto de factores representan mucho menos la situación que los dos primeros y su nombre explica en sí mismo la interpretación asociada a cada una. A continuación comentamos la descriptiva de las puntuaciones factoriales y en la siguiente sección agruparemos las secciones censales en clústers.
+
+**Factor 3: Faltan suministros básicos**
+**Factor 4: Clase media-baja**
+**Factor 5: Baja densidad de población**
+**Factor 6: Clase media-alta**
+**Factor 7: Vivienda colectiva**
+
+```{r}
+aux = describe(fit_2$scores)[,-c(1,2, 3, 4, 6, 13)] %>% round(digits = 2)
+nb_fact = c(
+  "Necesidad futura",
+  "Ahora autosuficiente",
+  "Faltan suministros básicos",
+  "Clase media-baja",
+  "Baja densidad de población",
+  "Clase media-alta",
+  "Vivienda colectiva"
+)
+rownames(aux) = nb_fact
+
+kable(aux, booktabs = TRUE, format = "latex", align = "c",
+      caption = "Estadísticos descriptivos de las puntuaciones factoriales",
+        row.names = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"),
+                full_width = FALSE)
+```
+
+Como es habitual las variables han sido estandarizadas antes del análisis, de modo que pasamos por alto la media y varianza. Nos fijamos en el signo de la mediana y la asímetría (skew): Todas las variables consendan una cola derecha pesada, en otras palabras para cada factor existen pocas secciones con puntuaciones muy altas mientras que muchas ligeramente bajas. El caso extremo es el factor de *Vivienda colectiva*, es plausible que las viviendas colectivas se encuentren muy concentradas en secciones particulares.
+
+Destacamos que la mediana más baja es por orden la de los factores *Baja densidad de población*, *Clase media-baja* y *Ahora autosuficiente* intuimos que seguramente habrá algunas secciones con muy densidad muy baja de población, muchas personas de clase medio-baja y muchas personas con poder adquisitivo alto. Recogemos los histogramas correspondientes a todos los factores en el annexo.
 
 \newpage
 # Clústers
@@ -200,11 +266,31 @@ include_graphics("grafs/cor/cor_casa.png")
 include_graphics("grafs/cor/cor_df.png")
 ```
 
+### Puntuaciones factoriales
+
+```{r}
+for(i in 1:7){
+  hist(fit_2$scores[,i], main = paste0(i, ". ", nb_fact[i]), xlab = NULL, ylab = NULL)
+}
+```
+
+
+## Influencia factor-variable
+
+```{r, echo = TRUE}
+print(fit_2[["loadings"]], digits = 2, cutoff = .1, sort = TRUE)
+```
+
+
 
 \newpage
 # Bibliografía
 
 - [Datos vectoriales](https://www.juntadeandalucia.es/institutodeestadisticaycartografia/dega/datos-espaciales-de-referencia-de-andalucia-dera/descarga-de-informacion)
+
+- [Análisis factorial I](https://www.karlin.mff.cuni.cz/~maciak/NMST539/cvicenie8.html)
+
+- [Análisis factorial II](https://www.geo.fu-berlin.de/en/v/soga-r/Advances-statistics/Multivariate-approaches/Factor-Analysis/A-Simple-Example-of-Factor-Analysis-in-R/index.html)
 
 - [Análisis clúster I](https://spatialanalysis.github.io/workshop-notes/spatial-clustering.html#clustering-analysis-with-other-r-packages) 
 
