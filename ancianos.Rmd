@@ -8,8 +8,6 @@ output:
 ---
 
 
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE, fig.pos = "H")
 setwd("C:/Users/ferran/Documents/Universitat/US/GEO/trabajos/ancianos")
