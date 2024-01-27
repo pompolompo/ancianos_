@@ -7,10 +7,9 @@ output:
     toc: true
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE, fig.pos = "H")
-setwd("C:/Users/ferran/Documents/Universitat/US/GEO/trabajos/ancianos")
+setwd("C:/Users/ferran/Documents/Universitat/US/GEO/trabajos/ancianos_")
 ```
 
 ```{r}
@@ -53,10 +52,7 @@ Reducción dimensional:
   + Barlett: ¿Existe correlación?
   
 - Análisis factorial:
-  + Número de factores:
-    - Regla de Kaiser
-    - Proporción de varianza explicada
-    - Scree plot
+  + Número de factores:(Regla de Kaiser, Proporción de varianza explicada, Scree plot)
   + Extracción y rotación de factores (R)
   + Puntuaciones factoriales (Descriptiva)
 
@@ -120,24 +116,18 @@ cortest.bartlett(R1, n = nrow(X1))[["p.value"]] # podemos rechazar H_0
 **Kaiser, Meyer, Olkin:**
 
 - Medida de adecuación de la muestra para un análisis factorial (basa)
-- Compara la proporción de correlación y la correlación parcial^[Si la correlación parcial es alta en comparación con la correlación canónica significa que la estructura de la correlación no es conjunta, para más información consultar [este enlace.](https://en.wikipedia.org/wiki/Kaiser%E2%80%93Meyer%E2%80%93Olkin_test#Measure_of_sampling_adequacy)]
+- Compara la proporción de correlación y la [correlación parcial](https://en.wikipedia.org/wiki/Kaiser%E2%80%93Meyer%E2%80%93Olkin_test#Measure_of_sampling_adequacy)]
 - Está acotada entre 0 y 1, según Kaiser:
     + Valores mayores a 0,9 son maravillosos
     + Valores mayores a 0,8 son meritorios
     + Valores mayores a 0,7 son medios
     + Valores mayores a 0,6 son mediocres
     + Valores mayores a 0,5 son miserables
-    + Valores menores a 0,5 son inaceptables
 
 ```{r, echo = TRUE}
 KMO(R1)[[1]] # según Kaiser, la adecuación de la muestra es meritoria
 ```
 
-<<<<<<< HEAD
-=======
-Cabe remarcar que tras decidir que el análisis factrial es adecuado una práctica habital es estandarizar las variables con con propósito de comparabilidad entre ellas. Sin embargo trs realizar pruebas con y sin estandarizar hemos obtenido mejores resultados sin estandarizar. Teniendo en cuenta que la extracción de factores nos servirá fara formar clústers, que es nuestro principal objetivo consideramos más importante conseguir un buen ajuste que obtener comparabilidad en una etapa intermedia del trabajo.
-
->>>>>>> c9c7c1eaf6c4cde98de98f203ab3022a82a33313
 \newpage
 ## Número, rotación y puntuaciones factoriales
 
@@ -192,9 +182,13 @@ En cierta manera es la antítesis del anterior factor. Lo único que comparten e
 El resto de factores representan mucho menos la situación que los dos primeros y su nombre explica en sí mismo la interpretación asociada a cada una. A continuación comentamos la descriptiva de las puntuaciones factoriales y en la siguiente sección agruparemos las secciones censales en clústers.
 
 **Factor 3: Faltan suministros básicos**
+
 **Factor 4: Clase media-baja**
+
 **Factor 5: Baja densidad de población**
+
 **Factor 6: Clase media-alta**
+
 **Factor 7: Vivienda colectiva**
 
 ```{r}
@@ -274,7 +268,7 @@ include_graphics("grafs/cor/cor_df.png")
 
 ### Puntuaciones factoriales
 
-```{r}
+```{r, out.width="90%"}
 for(i in 1:7){
   hist(fit_2$scores[,i], main = paste0(i, ". ", nb_fact[i]), xlab = NULL, ylab = NULL)
 }
