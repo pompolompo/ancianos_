@@ -71,7 +71,7 @@ Así logramos reducir la dimensionalidad del conjunto de datos y estamos listos 
 
 2. **Agrupación no jerárquica, k-medias:** En este caso no es necesario definir una noción de distancia, sin embargo hay que especificar el número de clústers de antemano. El centro de cada clúster es el centroide, cuya ubicación se determina de manera que la distancia entre los centroides y los puntos del grupo sea mínima. El algoritmo de k-medias actualiza iterativamente la posición de los centroides y la pertenencia de las entidades hasta minimizar la suma de cuadrados dentro de cada grupo. El resultado final depende del número de clústers y de la posición inicial de los centroides. Los centroides iniciales se eligen de manera que la convergencia esté garantizada. El número de grupos se suele elegir con la ayuda del *elbow plot*, que representa la velocidad de disminución del error en función del número de clústers. En cualquier caso se suelen ajustar varios análisis con diferente número de clústers para compararlos y elegir el más favorable.
 
-3. **Agrupación con restricciones espaciales, SKATER:** Existen múltiples métodos de agrupación que cuentan con restricciones espaciales. En este caso también se hace la distinción clásica entr métodos jerárquicos o no jerárquicos. Dentro de los métodos jerárquicos el análogo algomerativo es SCHC (*Spatially Constrained Hierarchical Clustering*) y el disolutivo es SKATER (*Spatial C(K)luster Analysis by Tree Edge Removal*). Este último es el que empleamos en el proyecto. Algunos de los métodos no jerárquicos son el AZP (*automatic zoning procedure*) y el Max-p (considera la agrupación como un problema de programación lineal entera a optimizar). En cualquier caso se requiere una definición de contigüidad para la restricción y o bien el número de grupos se especifica de antemano o se usa una tolerancia de error. Para más información se puede consultar [este enlace](https://geodacenter.github.io/workbook/9d_spatial3/lab9d.html) o [este enlace.](https://geodacenter.github.io/workbook/9c_spatial4/lab9c.html)
+3. **Agrupación con restricciones espaciales, SKATER:** Existen múltiples métodos de agrupación que cuentan con restricciones espaciales. En este caso también se hace la distinción clásica entr métodos jerárquicos o no jerárquicos. Dentro de los métodos jerárquicos el análogo algomerativo es SCHC (*Spatially Constrained Hierarchical Clustering*) y el disolutivo es SKATER (*Spatial C(K)luster Analysis by Tree Edge Removal*). Este último es el que empleamos en el proyecto. Algunos de los métodos no jerárquicos son el AZP (*automatic zoning procedure*) y el Max-p (considera la agrupación como un problema de programación lineal entera a optimizar). En cualquier caso se requiere una definición de contigüidad para la restricción y o bien el número de grupos se especifica de antemano o se usa una tolerancia de error. Para más información se puede consultar [este enlace.](https://geodacenter.github.io/documentation.html)
 
 
 ## Herramientas
@@ -345,10 +345,8 @@ mf_layout(title = "Clústers jerárquicos",
             "mapsf ",
             packageVersion("mapsf")))
 ```
-**breve comentario sobre los clústers**
 
-mapa: problema, no colindantes (sin restricción geográfica)
-medias factoriales: *falta indagar*
+Esta agrupación no facilita la tarea de identificar zonas que requieran más o menos servicios asistenciales porqué las entidades de cada clúster están repartidas por el mapa sin formar ningún patrón claro. Podríamos estudiar en detalle las características de cada clúster en relación a los factores, pero esto no resolverís el problema de identificar zonas homogéneas contiguas.
 
 ## Método de k-medias
 
@@ -442,10 +440,7 @@ mf_layout(title = "Clústers no jerárquicos",
             packageVersion("mapsf")))
 ```
 
-**breve comentario sobre los clústers**
-
-mapa: problema, no colindantes (sin restricción geográfica)
-medias factoriales: *falta indagar*
+De forma similar al método jerárquico los clústers seleccionados no simplifican la identificación de áreas que puedan necesitar más o menos servicios asistenciales, ya que cada una de sus entidades está dispersa en el mapa sin seguir un patrón evidente. Aunque podríamos analizar minuciosamente las características de cada clúster en relación con los factores, esto no abordaría la dificultad de identificar áreas contiguas con homogeneidad.
 
 ## Método con restricción geográfica
 
@@ -468,7 +463,12 @@ El algoritmo *Spatial C(K)luster Analysis by Tree Edge Removal* (SKATER) introdu
 
 En este caso usaremos las puntuaciones factoriales como variables sobre las secciones electorales y los pesos de dama (consideramos contiguas secciones que comparten un vértice). Aplicamos el algoritmo con distinto número de clústers y comparamos sus resultados:
 
-```{r, echo = TRUE}
+```{r}
+par(mfrow = c(1, 1))
+```
+
+
+```{r, echo = TRUE, out.width="95%", fig.align='center'}
 # datos geográficos y variables factoriales
 shp_X = data.frame(punt) %>%
   mutate(sec = rownames(punt_k)) %>%
@@ -482,8 +482,9 @@ W = queen_weights(shp_X) # pesos
 ska3 = skater(3, W, shp_X)
 ska5 = skater(5, W, shp_X)
 ska8 = skater(8, W, shp_X)
+ska12 = skater(12, W, shp_X)
 
-for(k in list(ska3$Clusters, ska5$Clusters, ska8$Clusters)){
+for(k in list(ska3$Clusters, ska5$Clusters, ska8$Clusters, ska12$Clusters)){
   shp_X$'Clúster' = k
   mf_map(shp_X, var = "Clúster", type = "typo")
   mf_layout(title = paste0("Clústers con el método SKATE restringido a ", 
@@ -495,6 +496,89 @@ for(k in list(ska3$Clusters, ska5$Clusters, ska8$Clusters)){
 }
 ```
 
+En las páginas anteriores se pueden ver las agrupaciones con restricción espacial resultantes de aplicar el método *SKATER* con 3, 5, 8 y 12 clústers. Dado que se trata de un método jerárquico la similitud entre los resultados con diferente número de clúster es aparente. En cuanto a comparación de objetivos nos fijamos en dos aspectos: La interpretabilidad en relación a nuestro objetivo y el ratio de suma de cuadrados entre clústers y la suma de cuadrados total (grado de diferenciación entre grupos). Esta medida mejora conforme aumenta el número de grupos, pero si hay demasiados clústers se pierde interpretabilidad. Sin embargo un recurso a nuestra dissposicón es representar solo algunos clústers para auellos ajustes en los que hay muchos. Comparamos primero la medida de adecuación en la siguiente tabla:
+
+```{r}
+matrix(paste0(round(c(ska3[[5]], ska5[[5]], ska8[[5]], 
+                      ska12[[5]])*100, digits = 2), " %"),
+       nrow = 4, dimnames = list(
+         paste0("Ajuste con ", c(3, 5, 8, 12), " clústers"),
+         "Ratio suma de cuadrados entre clústers y total"
+       )) %>%
+  kable(format = "latex", booktabs = TRUE, align = "c",
+        caption = "Comparación de las medidas de ajuste, método SKATE",
+        row.names = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"),
+                full_width = FALSE)
+```
+
+Vemos que la calidad del ajuste mejora a un ritmo más o menos constante, lo que significa que resulta últil añadir clúsers hasta este punto. Es posible que siga mejorando a un ritmo constante con un número mayor de grupos, pero la interpretabilidad se complicará excesivamente. Decidimos optar por el mejor ajuste, interpretamos los estadísticos resumen habituales sobre los factores para cada clúster.
+
+```{r}
+data.frame(shp_X) %>%
+  select(-geometry) %>%
+  group_by(Clúster) %>%
+  summarise(across(Factor1:Factor7, mean)) %>%
+  round(digits = 3) %>% mutate(
+    n = group_by(shp_X, Clúster) %>% 
+      summarise(n = n()) %>% pull(n)
+  ) %>% select(Clúster, n, everything()) %>%
+  kable(booktabs = TRUE, format = "latex", align = "c",
+        caption = "Medidas sobre los factores para cada clúster",
+        row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"),
+                full_width = FALSE)
+```
+
+Sobresalen algunas medidas para ciertos grupos, las interpretamos en clave del significado de cada factor que deducimos del análisis factorial, destacamos:
+
+Los grupos más grandes (del 1 al 4) están balacnceados porqué cuentan con más secciones que suavizan las métricas, señalamos lo más destacable de cada uno:
+
+- Grupo 1: Relativamente autosuficiente, con necesidad actual
+- Grupo 2: Baja denisdad de población 
+- Grupo 3: Relativamente poco autosuficiente con algo de necesidad futura
+- Grupo 4: Clase media-baja con el resto de factores poco destacables
+
+Los grupos medianos (del 5 al 7/8/9) siguen estando relativamente balanceados, pero algunas características aparentemente sobresalen más:
+
+- Grupo 5: Autosuficiente sin clase media-baja
+- Grupo 6: Nada excesivamente destacalble, algo de necesidad futura y falta de suministros
+- Grupo 7: Alta necesidad futura y densidad de población, baja autosuficiencia y un factor negativo de clase medio-alta
+- Grupo 8: Destaca el factor de clase media-baja con una densidad de población relativamente alta
+- Grupo 9: Algo de necesidad futura con baja densidad de población y una mezcla de clases medias
+
+Finalmente los tres últimos grupos están formados por una sección cada uno. Todos ellos destacan en el factor de la vivienda colectiva y en parte del resto. Proponemos fusionar los tres clústers a pesar de que no sean contiguos. Teniendo en cuenta esta interpretación volvemos a representar el ajuste con 12 clústers (ahora transformados en 10) en dos etapas: Primero los grupos 1, 2, 3 y 4 y luego el resto.
+
+```{r}
+aux1 = shp_X[shp_X$'Clúster' < 5,]
+
+# clústers 1 al 4
+mf_map(shp_X)
+mf_map(aux1, var = "Clúster", type = "typo", add = TRUE)
+mf_layout(title = "Clústers grandes",
+          credits = paste0(
+              "Fuente: Universidad de Sevilla\n",
+              "mapsf ", packageVersion("mapsf"),
+              "\nrgeoda", packageVersion("rgeoda")))
+```
+
+Estas agrupaciones son relativamente grandes, por tanto su utilidad en cuanto a ayuda a decidir en qué punto facilitar la adecuación de servicios asistenciales es limitada. Por otra parte al ser tan numerosos no destacan excesivamente en ninguna  de sus puntuaciones factoriales. Sin embargo prporcionan información valiosa que nos ayuda a contextualizar decisiones. Notamos que los grupos que, por la interpretación anterior, pueden verse más beneficiados por los servicios asistenciales son el 3 y el 4. Éstos colindan entre ellos y son relativamente menos extendos que los otros dos. Esta información nos ayudará a contextualizar la planificación de servicios asistenciales. Por otra parte los clústers 1 y 2 son más extensos y contienen un mayor número de secciones, eso dificulta la pormenorización de sus características. Una dirección de trabajo futura es estudiar estos grupos de forma aislada para identificar diferencias internas.
+
+```{r}
+aux2 = shp_X[shp_X$'Clúster' > 4,]
+aux2[aux2$Clúster %in% 10:12, "Clúster"] = 10
+
+# clústers 5 al 10
+mf_map(shp_X)
+mf_map(aux2, var = "Clúster", type = "typo", add = TRUE)
+mf_layout(title = "Clústers pequeños",
+          credits = paste0(
+              "Fuente: Universidad de Sevilla\n",
+              "mapsf ", packageVersion("mapsf"),
+              "\nrgeoda", packageVersion("rgeoda")))
+```
+
+En este caso los grupos son más pequeños, lo que nos permite categorizar sus características mejor. Antes hemos descrito el grupo 5 y 6 como autosuficiente y con algo de necesidad, respectivamente. Estos pueden ser objeto de actuación, pero no son los que se enuentran en una situación más crítica. En contraste los grupos 7 y 8 sí necesitan servicios asistenciales con más urgencia. El grupo 9 se puede describir como zona de clases medias con relativa necesidad (grado de necesidad entre los grupos 7, 8 y 5, 6). Finalmente el grupo 10 consiste en la aglomeración de secciones dispares al resto principalmente por sus características de vivienda colectiva y s encuentran cerca de zonas de interés para la actuación, por tanto se podrían beneficiar de ella sin influir demasiado en la decisión.
 
 ```{r, include=FALSE, eval=FALSE}
 # usando los factores ...
@@ -507,8 +591,7 @@ ska8 = skater(8, W, shp_X[paste0("Factor", f)])
 
 for(k in list(ska3$Clusters, ska5$Clusters, ska8$Clusters)){
   shp_X$'Clúster' = k
-  mf_map(shp_X, var = "Clúster", type = "typo", 
-         leg_title_cex = 3, leg_val_cex = 3)
+  mf_map(shp_X, var = "Clúster", type = "typo")
   mf_layout(title = paste0(
     "SKATE restringido a ", 
     length(unique(k)), " clústers ",
@@ -518,12 +601,21 @@ for(k in list(ska3$Clusters, ska5$Clusters, ska8$Clusters)){
             "mapsf ",
             packageVersion("mapsf"),
             "\nrgeoda",
-            packageVersion("rgeoda")), cex = 3
+            packageVersion("rgeoda"))
   )
 }
 ```
 
+\newpage
+# Conclusiones
 
+En este trabajo hemos resumido una gran cantidad de variables en pocos factores y los hemos usado pora agrupar secciones censales en clústers con el vistas a la planificación de servicios asistenciales para la población anciana. Primero hemos introducido el tema y la metodología que empleamos, luego organizamos la información en dos partes: La reducción dimensional y el análisis clúster.
+
+En la parte de reducción dimensional explicamos brevemente la intuición de las técnicas con un enfoque práctico. Seleccionamos las variables pensando en el objetivo final y otras medidas como la comunalidad o correlación, para ello usamos gráficos de correlación. Seguidamente comprobamos satisfactoriamente la adecuación de la muestra usando tests de Barlett y KMO. Para decidir la cantidad de factores a extraer nos valemos de diferentes criterios: La regla de Kaiser, la proporción de varianza explicada y el *Scree plot*. Extraemos 7 factores y los interpretamos en relación a la carga de las variables seleccionadas que llevan, también realizamos un breve análisis descriptivo. Para finalizar este apartado asignamos las puntuaciones factoriales que nos usaremos en el siguiente a todas las secciones censales.
+
+En la parte del análisis clúster presentamos diferentes enfoques y una técnica para cada uno de ellos. Dentro de los métodos clásicos realizamos una agrupación jerárquica desagregando secciones a partir de la definición euclídea de distancia. Cabe mencionar que excluimos algunas observaciones outliers para evitar resultados espurios. Dibujamos el dendograma para decidir el número de clústers (8) y comentamos las medidas de cada uno en cuanto a los factores que usamos para crearlos. El otro método clásico es el análisis no jerárquico y la técnica que elegimos es la de k-medias. Esta técnica iterativa requiere la especificación del número de grupos de antemano (7). Para ello nos valemos de gráficos de condo con los factores reescaado y sin reescalar. Finalmente introducimos el enfoque de agrupación con restricciones espaciales cuya idea es obligar a los componentes de un clúster a ser contiguos en algún sentido. Definimos como contiguas aquellas secciones que comparten almenos un vértice. Decidimos emplear la técnica SKATE, esta requiere que especifiquemos el número de clústers así que ajustamos  cuatro veces con 3, 5, 8, y 12 clústers. Nos quedamos con el último teniendo en cuenta la proporción de suma de cuadrados dentro de los clústers y total, así como la interpretabilidad. También decidimos fusionar tres clústers con un único integrante. Interpretamos las medidas factoriales de los clústers ajustados teniendo en cuenta las relaciones entre factores y variables resultantes de la primera fase del trabajo.
+
+Las agrupaciones homogéneas resultantes del proceso anterior nos sirven para planificar un servicio asistencial a la población anciana de Sevilla. Contextulaizamos los resultados de los distintos ajustes clúster poniendo mayor énfasis en el último. Identificamos algunas zonas de interés clasificables con mucha o poca prioridad. Sin embargo sería necesario continuar analizando algunos de los clústers más grandes de forma aislada para extraer una vision más fina. Otra dirección futura del proyecto es explorar otros métodos de agrupación con restricciones espaciales y comparar los resultados.
 
 \newpage
 # Annexo
